@@ -10,12 +10,12 @@ require('dotenv').config();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-app.use('./auth', authRoutes);
+app.use('/auth', authRoutes);
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
