@@ -155,6 +155,12 @@ body {
     font-weight: 700;
 }
 
+.auth__form-error-message {
+  color: red !important;
+  font-size: 11px !important;
+  margin: 10 px 10px !important; 
+}
+
 @media screen and (max-width: 800px) {
     .auth__form-container {
         flex-direction: column-reverse;
@@ -193,14 +199,14 @@ body {
     display: flex;
     flex: 1;
     /* height: 800px; */
-    height: 100%;
+    height: 100vh;
     /* border-radius: 16px; */
     box-shadow: rgba(0, 0, 0, 0.33) 0px 1px 4px 0px;
 }
 
 .str-chat-channel-list {
     height: fit-content;
-    margin-bottom: 8px;
+    margin-bottom: 80px;
 }
 
 .str-chat-channel {
@@ -267,6 +273,37 @@ body {
     z-index: 1;
 }
 
+.str-chat__avatar {
+  width: 32px !important;
+  height: 32px !important;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgb(191, 186, 186);
+  box-sizing: border-box;
+}
+
+.str-chat__avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 50%;
+  border-color: #000;
+}
+
+.str-chat__avatar-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;          /* Adjust for readability */
+  font-weight: 600;
+  color: #fff;              /* White letter on colored circle */
+  background-color: #005fff; /* Default background color */
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  text-transform: uppercase;
+}
+
 .channel-empty__avatars .str-chat__avatar {
     margin-right: 0;
 }
@@ -293,7 +330,7 @@ body {
 }
 
 .channel__container {
-    height: 100%;
+    height: 100vh;
     width: 100%;
 }
 
@@ -319,6 +356,12 @@ body {
 
 .str-chat__date-separator {
     padding: 20px 40px;
+}
+
+.str-chat__channel-list {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
 }
 
 .custom-thread-header {
@@ -363,7 +406,6 @@ body {
 
 .channel-list__container {
     display: flex;
-    /* height: 800px; */
     height: 100%;
     box-shadow: inset 1px 0px 0px rgba(0, 0, 0, 0.1);
 }
@@ -395,6 +437,7 @@ body {
     flex-direction: column;
     background: var(--primary-color);
     width: 240px;
+    overflow-y: auto;
 }
 
 .icon1__inner {
@@ -490,15 +533,17 @@ body {
 .channel-search__results {
     position: absolute;
     height: fit-content;
+    max-height: 300px;
+    overflow-y: auto;
     width: 300px;
     background: #fff;
-    border: 1px solid #e9e9ea;
+    border: 1px solid #333;
     box-sizing: border-box;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.15);
     border-radius: 8px;
     z-index: 10;
-    left: 230px;
-    top: 16px;
+    left: 300px;
+    top: 60px;
 }
 
 .channel-search__results-header {
@@ -543,6 +588,7 @@ body {
     display: flex;
     align-items: center;
     margin-left: 12px;
+    gap: 8px;
 }
 
 .result-hashtag {
@@ -644,7 +690,6 @@ body {
     align-items: center;
     justify-content: flex-end;
     border-bottom-right-radius: 16px;
-
     padding: 0px 10px;
 }
 
@@ -714,6 +759,11 @@ body {
     align-items: center;
     flex: 2;
     text-align: left;
+    gap: 10px;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+    border-radius: 50%;
 }
 
 .user-item__wrapper p {
@@ -931,9 +981,21 @@ body {
 }
 
 .team-channel-list {
+    margin: 0 !important;
+    padding: 0 !important;
     width: 100%;
     display: flex;
+    height: 100%;
     flex-direction: column;
+    background-color: #005fff;
+}
+
+.team-channel-list__children {
+  min-height: 100px;
+}
+
+.team-channel-list + .team-channel-list {
+  margin-top: 0.75rem;
 }
 
 .team-channel-list__message {
@@ -961,7 +1023,7 @@ body {
     font-size: 13px;
     line-height: 16px;
     height: 16px;
-    color: rgba(255, 255, 255, 0.66);
+    color: rgb(0, 0, 0);
     margin-bottom: 10px;
 }
 
@@ -1591,6 +1653,89 @@ div.rta__autocomplete.str-chat__emojisearch {
 .str-chat__thread-list .str-chat__message-team {
     padding: 10px;
 }
+
+/* Container styling */
+.str-chat__message-input-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 0px solid #ccc;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background-color: #fff;
+  transition: box-shadow 0.2s;
+}
+
+/* File upload icon (paperclip) */
+.str-chat__file-input-label {
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.str-chat__file-input-label:hover {
+  background-color: #f0f0f0;
+}
+
+/* Hide actual file input */
+.str-chat__file-input {
+  display: none;
+}
+
+/* Textarea styling */
+.str-chat__message-textarea-container {
+  flex: 1;
+}
+
+.str-chat__textarea__textarea {
+  width: 100%;
+  height: auto !important;
+  min-height: 24px;
+  max-height: 150px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  resize: none;
+  background-color: #fafafa;
+  transition: border-color 0.2s;
+  transition: height 0.2s ease-in-out;
+  overflow-y: auto;
+  resize: none;
+  line-height: 1.4;
+}
+
+.str-chat__textarea__textarea:focus {
+  outline: none;
+  border-color: #05245a;
+  background-color: #fff;
+}
+
+/* Send button */
+.str-chat__send-button {
+  background-color: #0066ff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.str-chat__send-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.str-chat__send-button:hover:enabled {
+  background-color: #f0f0f0;
+}
+
 
 .thread-message-input__wrapper {
     display: flex;

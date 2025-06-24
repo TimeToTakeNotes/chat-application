@@ -1,45 +1,105 @@
-import React, {useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useChatContext } from 'stream-chat-react';
+import { ResultsDropdown } from './'
+import { SearchIcon } from '../assets';
 
-import { SearchIcon} from '../assets';
-
-
-function ChannelSearch() {
+const ChannelSearch = ({ setToggleContainer }) => {
+    const { client, setActiveChannel } = useChatContext();
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
+    const [teamChannels, setTeamChannels] = useState([]);
+    const [directChannels, setDirectChannels] = useState([]);
+    const wrapperRef = useRef(null);
+
+    useEffect(() => {
+        if(!query) {
+            setTeamChannels([]);
+            setDirectChannels([]);
+        }
+    }, [query]);
 
     const getChannels = async (text) => {
-        try {
-
-        } catch (error) {
-            setQuery('');
+        if (!text.trim()) {
+            setTeamChannels([]);
+            setDirectChannels([]);
+            return;
         }
-    };
+
+        try {
+            const channelResponse = client.queryChannels({
+                type: 'team', 
+                name: { $autocomplete: text }, 
+                members: { $in: [client.userID]}
+            });
+
+            const userResponse = client.queryUsers({
+                id: { $ne: client.userID },
+                name: { $autocomplete: text }
+            })
+
+            const [channels, { users }] = await Promise.all([channelResponse, userResponse]);
+
+            // Only set if there's a *visible* match
+            const filteredChannels = channels.filter((c) =>
+                c.data?.name?.toLowerCase().includes(text.toLowerCase())
+            );
+
+            const filteredUsers = users.filter((u) =>
+                u.name?.toLowerCase().includes(text.toLowerCase())
+            );
+
+            setTeamChannels(filteredChannels);
+            setDirectChannels(filteredUsers);
+            setLoading(false);
+        } catch (error) {
+            setQuery('')
+            console.error('Search failed:', error);
+            setTeamChannels([]);
+            setDirectChannels([]);
+            setLoading(false);
+        }
+    }
 
     const onSearch = (event) => {
         event.preventDefault();
 
+        const text = event.target.value;
+        setQuery(text);
         setLoading(true);
-        setQuery(event.target.value);
-        getChannels(event.target.value);
-    };
+        getChannels(text);
+    }
 
-  return (
-    <div className='channel-search__container'>
-        <div className='channel-search__input__wrapper'>
-            <div className='channel-search__input__icon'>
-                <SearchIcon />
+    const setChannel = (channel) => {
+        setQuery('');
+        setActiveChannel(channel);
+    }
+
+    return (
+        <div className="channel-search__container">
+            <div className="channel-search__input__wrapper">
+                <div className="channel-serach__input__icon">
+                    <SearchIcon />
+                </div>
+                <input 
+                    className="channel-search__input__text" 
+                    placeholder="Search" 
+                    type="text" 
+                    value={query}  
+                    onChange={onSearch}
+                />
             </div>
-            <input 
-                className='channel-search__input__text'
-                placeholder='Search'
-                type='text'
-                value={query}
-                onChange={onSearch} 
-            />
+            { query && (
+                <ResultsDropdown 
+                    teamChannels={teamChannels}
+                    directChannels={directChannels}
+                    loading={loading}
+                    setChannel={setChannel}
+                    setQuery={setQuery}
+                    setToggleContainer={setToggleContainer}
+                />
+            )}
         </div>
-    </div>
-  )
+    )
 }
 
 export default ChannelSearch
