@@ -1,3 +1,14 @@
+/* 
+Using variant of BEP (BLock-Element-Modifier) naming:
+
+    => .block__element_nested-element--modifier
+
+    Block -> Standalone component (e.g., form)
+    Element -> Part of block that performs function (e.g., form__input)
+    Nested Element -> Nested element or continuation of element hierarchy (e.g., __form-container_fields-content)
+    Modifier -> Variation of block or element (e.g., button--primary)
+*/
+
 :root {
     --primary-color: #005fff;
     --primary-color-alpha: #005fff1a;
@@ -15,7 +26,7 @@ body {
 }
 
 .auth__form-container {
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
     flex-direction: row;
 }
@@ -64,13 +75,13 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-
+    
     margin: 1rem 0rem;
 }
 
 .auth__form-container_fields-content_input label {
     margin-bottom: 0.45rem;
-    color: rgb(61, 79, 88);
+    color: #000;
     font-size: 12px;
     font-family: Arial, Helvetica, sans-serif;
     letter-spacing: 0.7px;

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { ChannelList, useChatContext } from 'stream-chat-react';
 import Cookies from 'universal-cookie';
+import axios from 'axios';
 
 import { ChannelSearch, TeamChannelList, TeamChannelPreview } from './';
 import ChatIcon from '../assets/chat.png'
 import LogoutIcon from '../assets/logout.png'
+
+const URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
 const cookies = new Cookies();
 
@@ -40,17 +43,27 @@ const customChannelMessagingFilter = (channels) => {
 const ChannelListContent = ({ isCreating, setIsCreating, setCreateType, setIsEditing, setToggleContainer }) => {
     const { client } = useChatContext();
 
-    const logout = () => {
-        cookies.remove("token");
+    const logout = async () => {
+        try {
+        // Call backend logout endpoint to clear HttpOnly cookies
+        await axios.post(`${URL}/auth/logout`, {}, { withCredentials: true });
+
+        await client.disconnectUser(); // Cleanly closes Websocket & user session on Stream
+
+        // Clear client-side cookies
+        cookies.remove('token');
         cookies.remove('userId');
         cookies.remove('username');
         cookies.remove('fullName');
         cookies.remove('avatarURL');
         cookies.remove('hashedPassword');
-        cookies.remove('phoneNumber');
+        cookies.remove('emailAddress');
 
         window.location.reload();
-    }
+        } catch (err) {
+        console.error('Logout failed:', err);
+        }
+    };
 
     const filters = { members: { $in: [client.userID] } };
 

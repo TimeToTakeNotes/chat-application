@@ -1,23 +1,23 @@
 import React, { useState } from 'react';
-import Cookies from 'universal-cookie';
 import axios from 'axios';
 
 import signinImage from '../assets/signup.jpg';
 
-const cookies = new Cookies();
+const URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
 const initialState = {
     fullName: '',
     username: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: '',
+    emailAddress: '',
     avatarURL: '',
 }
 
 const Auth = () => {
     const [form, setForm] = useState(initialState);
     const [isSignup, setIsSignup] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
 
     const handleChange = (e) => {
@@ -26,6 +26,7 @@ const Auth = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
 
         if (isSignup && form.password !== form.confirmPassword) {
             setErrorMessage("Passwords do not match.");
@@ -36,32 +37,32 @@ const Auth = () => {
                 confirmPassword: '',
             }));
 
+            setSubmitting(false);
             return;
         }
 
-        const { username, password, phoneNumber, avatarURL } = form;
-        const URL = 'http://localhost:5000/auth';
+        const { username, emailAddress, avatarURL, password, confirmPassword } = form;
 
         try {
-            const { data: { token, userId, hashedPassword, fullName } } = await axios.post(`${URL}/${isSignup ? 'signup' : 'login'}`, {
-                username, password, fullName: form.fullName, phoneNumber, avatarURL,
+            const requesBody = {
+                fullName: form.fullName,
+                username,
+                emailAddress,
+                password,
+                confirmPassword,
+                ...(avatarURL && { avatarURL }) // Include only if not empty
+            };
+
+            await axios.post(`${URL}/auth/${isSignup ? 'signup' : 'login'}`, requesBody, {
+                withCredentials: true // to allow cookies to be set
             });
 
-            cookies.set('token', token);
-            cookies.set('username', username);
-            cookies.set('fullName', fullName);
-            cookies.set('userId', userId);
-
-            if(isSignup) {
-                cookies.set('phoneNumber', phoneNumber);
-                cookies.set('avatarURL', avatarURL);
-                cookies.set('hashedPassword', hashedPassword);
-            }
-
+            setSubmitting(false);
             window.location.reload();
         } catch (err) {
             console.error('Authentication error:', err.response?.data?.message || err.message);
             setErrorMessage(err.response?.data?.message || 'Login failed.');
+            setSubmitting(false);
         }
     };
 
@@ -103,25 +104,12 @@ const Auth = () => {
                             </div>
                         {isSignup && (
                             <div className="auth__form-container_fields-content_input">
-                                <label htmlFor="phoneNumber">Phone Number</label>
+                                <label htmlFor="emailAddress">Email Address</label>
                                 <input 
-                                    name="phoneNumber" 
-                                    type="text"
-                                    placeholder="Phone Number"
-                                    value={form.phoneNumber}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                        )}
-                        {isSignup && (
-                            <div className="auth__form-container_fields-content_input">
-                                <label htmlFor="avatarURL">Avatar URL</label>
-                                <input 
-                                    name="avatarURL" 
-                                    type="text"
-                                    placeholder="Avatar URL"
-                                    value={form.avatarURL}
+                                    name="emailAddress" 
+                                    type="email"
+                                    placeholder="Email Address"
+                                    value={form.emailAddress}
                                     onChange={handleChange}
                                     required
                                 />
@@ -152,7 +140,9 @@ const Auth = () => {
                             </div>
                             )}
                         <div className="auth__form-container_fields-content_button">
-                            <button>{isSignup ? "Sign Up" : "Sign In"}</button>
+                            <button disabled={submitting}>
+                                {submitting ? "Please wait..." : isSignup ? "Sign Up" : "Sign In"}
+                            </button>
                         </div>
                     </form>
                     {errorMessage && <p className="auth__form-error-message">{errorMessage}</p>}
